@@ -22,7 +22,7 @@ export async function SettingsActions(
           type: "list",
           name: "aiProvider",
           message: "Choose an AI provider to add a key for:",
-          choices: ["openAI", "claude", "gemini", "fireworks", "back"],
+          choices: ["openAI", "claude", "fireworks", "back"],
         },
       ]);
 
@@ -80,6 +80,8 @@ export async function SettingsActions(
       //recursive call
       await SettingsActions(newNotionAction, session, currentUser, users);
 
+    case "Choose Remote LLM":
+     
     case "Back":
       //recursive call
       const newAction = await promptAuthenticatedUser(currentUser);

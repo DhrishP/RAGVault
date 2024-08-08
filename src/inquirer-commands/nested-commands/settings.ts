@@ -6,7 +6,7 @@ export async function SettingsCommands() {
       type: "list",
       name: "action",
       message: "Here are the list of settings",
-      choices: ["Add AI Providers Keys", "Set Notion Configurations", "Back"],
+      choices: ["Add AI Providers Keys", "Set Notion Configurations", "Choose Remote LLM", "Back"],
     },
   ]);
   return action;
