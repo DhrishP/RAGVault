@@ -1,15 +1,18 @@
 import chalk from "chalk";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
-import { saveSession } from "../../functions/session.js";
-import { Session } from "../../types/index.js";
+import { saveSession } from "../../utils/session.js";
+import { Session, UserStore } from "../../types/index.js";
 import { createSpinner } from "nanospinner";
 import { sleep } from "../../utils/sleep.js";
+import { promptUnauthenticatedUser } from "../../inquirer-commands/ask-unauthenticated.js";
+import { handleUnauthenticatedAction } from "../ask-unauthenticated-action.js";
 
 export async function HeadOutActions(
   action: string,
   session: Session,
-  currentUser: string
+  currentUser: string,
+  users: UserStore
 ) {
   switch (action) {
     case "Exit(Session will be saved)":
@@ -21,11 +24,13 @@ export async function HeadOutActions(
       spinner.success({ text: chalk.green("Logged out successfully.") });
       session.currentUser = null;
       await saveSession(session);
+      const newActionLogout = await promptUnauthenticatedUser();
+      await handleUnauthenticatedAction(newActionLogout, users, session);
       break;
     case "Back":
       //recursive call
       const newAction = await promptAuthenticatedUser(currentUser);
-      await handleAuthenticatedAction(newAction, currentUser, session);
+      await handleAuthenticatedAction(newAction, currentUser, session, users);
       break;
     default:
       console.log(chalk.red("Invalid action"));
