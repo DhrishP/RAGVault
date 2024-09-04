@@ -33,7 +33,7 @@ export async function resetPassword(users) {
         spinner.success({
             text: chalk.green("Answer correct. You can now reset your password."),
         });
-        const { newPassword, confirmNewPassword } = await inquirer.prompt([
+        const { newPassword } = await inquirer.prompt([
             {
                 type: "password",
                 name: "newPassword",
