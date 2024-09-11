@@ -50,6 +50,8 @@ export async function register(users) {
         password: await hashPassword(password),
         securityQuestion,
         securityAnswer: await hashPassword(securityAnswer),
+        openAIKey: "",
+        collectionName: "",
     };
     await saveUsers(users);
     spinner.success({ text: chalk.green("Registration successful!") });
