@@ -1,57 +1,13 @@
 #!/usr/bin/env node
-import inquirer from "inquirer";
-import chalk from "chalk";
-import { createSpinner } from "nanospinner";
-import { sleep } from "./utils/sleep.js";
 import { loadUsers } from "./functions/user-transactions.js";
 import { loadSession, saveSession } from "./functions/session.js";
 import { ensureAppDir } from "./utils/cli-helpers.js";
 import { displayTitle } from "./functions/cli-ux.js";
-import { promptAuthenticatedUser } from "./inquirer-actions/ask-authenticated.js";
-import { handleUnauthenticatedAction } from "./inquirer-actions/ask-unauthenticated.js";
-
-async function promptUnauthenticatedUser() {
-  const { action } = await inquirer.prompt<{ action: string }>([
-    {
-      type: "list",
-      name: "action",
-      message: "What would you like to do?",
-      choices: ["Login", "Register", "Reset Password", "Exit"],
-    },
-  ]);
-  return action;
-}
-
-async function handleAuthenticatedAction(
-  action: string,
-  currentUser: string,
-  session: any
-) {
-  switch (action) {
-    case "Ask a question":
-      const { question } = await inquirer.prompt<{ question: string }>([
-        {
-          type: "input",
-          name: "question",
-          message: "What's your question?",
-        },
-      ]);
-      console.log(chalk.yellow(`You asked: ${question}`));
-      console.log(
-        chalk.gray(
-          "I'm an AI assistant, so I can't actually answer that question. But it's a great one!"
-        )
-      );
-      break;
-    case "Logout":
-      const spinner = createSpinner("Logging out...").start();
-      await sleep(1000);
-      spinner.success({ text: chalk.green("Logged out successfully.") });
-      session.currentUser = null;
-      await saveSession(session);
-      break;
-  }
-}
+import { promptAuthenticatedUser } from "./inquirer-commands/ask-authenticated.js";
+import { promptUnauthenticatedUser } from "./inquirer-commands/ask-unauthenticated.js";
+import { handleAuthenticatedAction } from "./actions-for-inquirers/ask-authenticated-action.js";
+import { handleUnauthenticatedAction } from "./actions-for-inquirers/ask-unauthenticated-action.js";
+import cfonts from "cfonts";
 
 export async function mainInq(): Promise<void> {
   await ensureAppDir();
@@ -59,7 +15,21 @@ export async function mainInq(): Promise<void> {
   let session = await loadSession();
   let currentUser = session.currentUser;
 
-  await displayTitle();
+  cfonts.say("RAGVAULT!", {
+    font: "block", // define the font face
+    align: "left", // define text alignment
+    colors: ["system"], // define all colors
+    background: "transparent", // define the background color, you can also use `backgroundColor` here as key
+    letterSpacing: 1, // define letter spacing
+    lineHeight: 1, // define the line height
+    space: true, // define if the output text should have empty lines on top and on the bottom
+    maxLength: "0", // define how many character can be on one line
+    gradient: false, // define your two gradient colors
+    independentGradient: false, // define if you want to recalculate the gradient for each new line
+    transitionGradient: false, // define if this is a transition between colors directly
+    rawMode: false, // define if the line breaks should be CRLF (`\r\n`) over the default LF (`\n`)
+    env: "node", // define the environment cfonts is being executed in
+  });
 
   while (true) {
     if (!currentUser) {
@@ -69,6 +39,11 @@ export async function mainInq(): Promise<void> {
         session.currentUser = currentUser;
         await saveSession(session);
       }
+    } else if (!users[currentUser].collectionName) {
+      console.log(
+        "You need to set up your collection before you can use Ragvault."
+      );
+      currentUser = null;
     } else {
       const action = await promptAuthenticatedUser(currentUser);
       await handleAuthenticatedAction(action, currentUser, session);
