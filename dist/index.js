@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadUsers } from "./functions/user-transactions.js";
+import { loadUsers, saveUsers } from "./functions/user-transactions.js";
 import { loadSession, saveSession } from "./functions/session.js";
 import { ensureAppDir } from "./utils/cli-helpers.js";
 import { promptAuthenticatedUser } from "./inquirer-commands/ask-authenticated.js";
@@ -7,11 +7,29 @@ import { promptUnauthenticatedUser } from "./inquirer-commands/ask-unauthenticat
 import { handleAuthenticatedAction } from "./actions-for-inquirers/ask-authenticated-action.js";
 import { handleUnauthenticatedAction } from "./actions-for-inquirers/ask-unauthenticated-action.js";
 import cfonts from "cfonts";
+import { checkChromaDocker } from "./utils/check-chromadocker.js";
+import { generateCollectionName } from "./utils/generate-collectionName.js";
 export async function mainInq() {
     await ensureAppDir();
     const users = await loadUsers();
     let session = await loadSession();
     let currentUser = session.currentUser;
+    const isChromaDBRunning = await checkChromaDocker();
+    if (!isChromaDBRunning) {
+        cfonts.say("Error", {
+            font: "block",
+            align: "left",
+            colors: ["red"],
+            background: "transparent",
+            letterSpacing: 1,
+            lineHeight: 1,
+            space: true,
+            maxLength: "0",
+            gradient: false,
+        });
+        console.log("Please run the docker container for ChromaDB to start on port 8000.");
+        process.exit(1);
+    }
     cfonts.say("RAGVAULT!", {
         font: "block", // define the font face
         align: "left", // define text alignment
@@ -37,8 +55,16 @@ export async function mainInq() {
             }
         }
         else if (!users[currentUser].collectionName) {
-            console.log("You need to set up your collection before you can use Ragvault.");
-            currentUser = null;
+            const isCollectionNameSet = users[currentUser].collectionName;
+            if (!isCollectionNameSet) {
+                const collectionName = await generateCollectionName(currentUser);
+                users[currentUser].collectionName = collectionName.name;
+                await saveUsers(users);
+            }
+            const action = await promptAuthenticatedUser(currentUser);
+            await handleAuthenticatedAction(action, currentUser, session);
+            if (!session.currentUser)
+                currentUser = null;
         }
         else {
             const action = await promptAuthenticatedUser(currentUser);
