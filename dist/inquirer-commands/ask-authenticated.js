@@ -10,7 +10,6 @@ export async function promptAuthenticatedUser(currentUser) {
                 "Ask a question🤔",
                 "Add data to your local brain🧠",
                 "Clear CLI🧹",
-                "Extras",
                 "Settings",
                 "Head Out👋",
             ],
