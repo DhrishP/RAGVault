@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import { createSpinner } from "nanospinner";
 import { sleep } from "../utils/sleep.js";
 import { saveSession } from "../functions/session.js";
-import { HeadOutActions } from "../inquirer-commands/nested-commands/headout.js";
+import { HeadOutCommands } from "../inquirer-commands/nested-commands/headout.js";
 import { promptAuthenticatedUser } from "../inquirer-commands/ask-authenticated.js";
 import { client, embeddingFunction } from "../utils/chroma-client.js";
 
@@ -52,7 +52,7 @@ export async function handleCredentialsAction(
       console.log(chalk.yellow("Here are your settings!"));
       break;
     case "Head Out👋":
-      const action = await HeadOutActions();
+      const action = await HeadOutCommands();
       if (action === "Exit(Session will be saved)") {
         console.log(chalk.blueBright("You will be remembered , sergeant!"));
         process.exit(0);
