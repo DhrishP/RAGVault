@@ -1,4 +1,4 @@
-import { ChromaClient, OpenAIEmbeddingFunction } from "chromadb";
+import { ChromaClient, OpenAIEmbeddingFunction,DefaultEmbeddingFunction } from "chromadb";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -8,3 +8,4 @@ export const embeddingFunction = new OpenAIEmbeddingFunction({
   openai_api_key: process.env.OPENAI_API_KEY!,
   openai_model: "text-embedding-3-small",
 });
+

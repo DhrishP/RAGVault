@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 
-export async function HeadOutActions() {
+export async function HeadOutCommands() {
   const { action } = await inquirer.prompt<{ action: string }>([
     {
       type: "list",

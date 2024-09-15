@@ -1,12 +1,12 @@
 import inquirer from "inquirer";
 
-export async function SettingsActions() {
+export async function SettingsCommands() {
   const { action } = await inquirer.prompt<{ action: string }>([
     {
       type: "list",
       name: "action",
       message: "Here are the list of settings",
-      choices: ["Add OpenAI-key", "Set Notion Config", "", "Back"],
+      choices: ["Add AI Providers Keys", "Set Notion Configurations", "Back"],
     },
   ]);
   return action;

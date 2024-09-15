@@ -1,8 +1,12 @@
 export async function checkChromaDocker() {
-  const res = await fetch(`http://localhost:8000/api/v1/collections`);
-  if (res.status === 200) {
-    console.log(await res.json());
-  } else {
-    console.log("Chroma Docker is not running");
+  try {
+    const res = await fetch(`http://localhost:8000/api/v1/collections`);
+    if (res.status === 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
   }
 }
