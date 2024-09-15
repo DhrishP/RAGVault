@@ -8,7 +8,15 @@ export async function loadSession(): Promise<Session> {
     return JSON.parse(data);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { currentUser: null };
+      return {
+        currentUser: null,
+        notionToken: null,
+        notionDatabaseId: null,
+        openAIKey: null,
+        claudeKey: null,
+        fireworksKey: null,
+        geminiKey: null,
+      };
     }
     throw error;
   }

@@ -7,7 +7,15 @@ export async function loadSession() {
     }
     catch (error) {
         if (error.code === "ENOENT") {
-            return { currentUser: null };
+            return {
+                currentUser: null,
+                notionToken: null,
+                notionDatabaseId: null,
+                openAIKey: null,
+                claudeKey: null,
+                fireworksKey: null,
+                geminiKey: null,
+            };
         }
         throw error;
     }
