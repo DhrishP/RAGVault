@@ -6,6 +6,9 @@ export interface User {
   collectionName: string;
   notionToken?: string;
   notionDatabaseId?: string;
+  claudeKey?: string;
+  fireworksKey: string;
+  geminiKey: string;
 }
 
 export interface UserStore {
@@ -14,4 +17,10 @@ export interface UserStore {
 
 export interface Session {
   currentUser: string | null;
+  notionToken: string | null;
+  notionDatabaseId: string | null;
+  openAIKey: string | null;
+  claudeKey: string | null;
+  fireworksKey: string | null;
+  geminiKey: string | null;
 }

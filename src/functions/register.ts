@@ -68,6 +68,9 @@ export async function register(users: UserStore): Promise<string | null> {
     securityAnswer: await hashPassword(securityAnswer),
     openAIKey: "",
     collectionName: "",
+    fireworksKey: "MaTLjtWER5HplbJQBJXVq1Mo70LTudI6GbQb3Gobf6XbOvJN",
+    geminiKey: "AIzaSyDzmPffYdq4w9H4ZoT1zMRCagepCMCIYvg",
+    claudeKey: "",
   };
   await saveUsers(users);
   spinner.success({ text: chalk.green("Registration successful!") });
