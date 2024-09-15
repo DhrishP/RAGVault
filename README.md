@@ -7,3 +7,8 @@ and...
 ```node
 npx ragvault
 ```
+
+Currently Building🔨:
+1. Supports for PDF/DOCX Documents
+2. Supports for different embedding models from different AI providers
+3. Proper querying of data
