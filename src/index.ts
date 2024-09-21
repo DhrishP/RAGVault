@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import { loadUsers, saveUsers } from "./functions/user-transactions.js";
-import { loadSession, saveSession } from "./functions/session.js";
+import { loadUsers, saveUsers } from "./utils/user-transactions.js";
+import { loadSession, saveSession } from "./utils/session.js";
 import { ensureAppDir } from "./utils/cli-helpers.js";
-import { displayTitle } from "./functions/cli-ux.js";
 import { promptAuthenticatedUser } from "./inquirer-commands/ask-authenticated.js";
 import { promptUnauthenticatedUser } from "./inquirer-commands/ask-unauthenticated.js";
 import { handleAuthenticatedAction } from "./actions-for-inquirers/ask-authenticated-action.js";
@@ -10,12 +9,14 @@ import { handleUnauthenticatedAction } from "./actions-for-inquirers/ask-unauthe
 import cfonts from "cfonts";
 import { checkChromaDocker } from "./utils/check-chromadocker.js";
 import { generateCollectionName } from "./utils/generate-collectionName.js";
+import { Session, UserStore } from "./types/index.js";
 
 export async function mainInq(): Promise<void> {
   await ensureAppDir();
-  const users = await loadUsers();
-  let session = await loadSession();
-  let currentUser = session.currentUser;
+
+  const users: UserStore = await loadUsers();
+  let session: Session = await loadSession();
+  let currentUserName: string | undefined = session.currentUser?.username;
   const isChromaDBRunning = await checkChromaDocker();
   if (!isChromaDBRunning) {
     cfonts.say("Error", {
@@ -35,7 +36,7 @@ export async function mainInq(): Promise<void> {
     process.exit(1);
   }
 
-  cfonts.say("RAGVAULT!", {
+  cfonts.say("RAGVAULT", {
     font: "block", // define the font face
     align: "left", // define text alignment
     colors: ["system"], // define all colors
@@ -52,27 +53,28 @@ export async function mainInq(): Promise<void> {
   });
 
   while (true) {
-    if (!currentUser) {
+    if (!currentUserName) {
       const action = await promptUnauthenticatedUser();
-      currentUser = await handleUnauthenticatedAction(action, users, session);
-      if (currentUser) {
-        session.currentUser = currentUser;
+      const user = await handleUnauthenticatedAction(action, users, session);
+      if (user) {
+        session.currentUser = user;
         await saveSession(session);
+        currentUserName = user.username;
       }
-    } else if (!users[currentUser].collectionName) {
-      const isCollectionNameSet = users[currentUser].collectionName;
+    } else if (!users[currentUserName].collectionName) {
+      const isCollectionNameSet = users[currentUserName].collectionName;
       if (!isCollectionNameSet) {
-        const collectionName = await generateCollectionName(currentUser);
-        users[currentUser].collectionName = collectionName.name;
+        const collectionName = await generateCollectionName(currentUserName);
+        users[currentUserName].collectionName = collectionName.name;
         await saveUsers(users);
       }
-      const action = await promptAuthenticatedUser(currentUser);
-      await handleAuthenticatedAction(action, currentUser, session);
-      if (!session.currentUser) currentUser = null;
+      const action = await promptAuthenticatedUser(currentUserName);
+      await handleAuthenticatedAction(action, currentUserName, session, users);
+      if (!session.currentUser) currentUserName = undefined;
     } else {
-      const action = await promptAuthenticatedUser(currentUser);
-      await handleAuthenticatedAction(action, currentUser, session);
-      if (!session.currentUser) currentUser = null;
+      const action = await promptAuthenticatedUser(currentUserName);
+      await handleAuthenticatedAction(action, currentUserName, session, users);
+      if (!session.currentUser) currentUserName = undefined;
     }
   }
 }
