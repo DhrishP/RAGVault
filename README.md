@@ -12,3 +12,9 @@ Currently Building🔨:
 1. Supports for PDF/DOCX Documents
 2. Supports for different embedding models from different AI providers
 3. Proper querying of data
+
+docker running command:
+
+```docker run -d --rm --name chromadb -v ./chroma:/chroma/chroma -p 8000:8000 chromadb/chroma:latest```
+
+**NOTE** : THE PORT SHOULD BE KEPT ***8000***
