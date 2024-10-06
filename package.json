@@ -1,6 +1,6 @@
 {
   "name": "ragvault",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "./dist/index.js",
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "chromadb-default-embed": "^2.13.2",
     "dotenv": "^16.4.5",
     "inquirer": "^9.1.5",
+    "nanoid": "^5.0.7",
     "nanospinner": "^1.1.0"
   },
   "devDependencies": {

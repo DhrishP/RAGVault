@@ -1,5 +1,14 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment variables
 .env
 .env.local
+
+# Documentation
 TODO.md
 
+# Build output
+dist/
+
+# Remove empty lines at the end
