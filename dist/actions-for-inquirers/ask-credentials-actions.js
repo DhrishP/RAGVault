@@ -2,7 +2,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import { createSpinner } from "nanospinner";
 import { sleep } from "../utils/sleep.js";
-import { saveSession } from "../functions/session.js";
+import { saveSession } from "../utils/session.js";
 import { HeadOutCommands } from "../inquirer-commands/nested-commands/headout.js";
 import { client, embeddingFunction } from "../utils/chroma-client.js";
 export async function handleCredentialsAction(action, currentUser, session) {
