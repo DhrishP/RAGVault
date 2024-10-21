@@ -1,11 +1,11 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { UserStore } from "../types/index.js";
+import { UserStore } from "../../types/index.js";
 import { createSpinner } from "nanospinner";
-import { sleep } from "../utils/sleep.js";
+import { sleep } from "../../utils/sleep.js";
 import bcrypt from "bcrypt";
-
-export async function login(users: UserStore): Promise<string | null> {
+import { User } from "../../types/index.js";
+export async function login(users: UserStore): Promise<User | null> {
   const { username, password } = await inquirer.prompt([
     {
       type: "input",
@@ -33,7 +33,7 @@ export async function login(users: UserStore): Promise<string | null> {
 
   if (await bcrypt.compare(password, users[username].password)) {
     spinner.success({ text: chalk.green("Login successful!") });
-    return username;
+    return users[username];
   } else {
     spinner.error({ text: chalk.red("Invalid password.") });
     return null;

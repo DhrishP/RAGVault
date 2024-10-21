@@ -10,12 +10,7 @@ export async function loadSession(): Promise<Session> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return {
         currentUser: null,
-        notionToken: null,
-        notionDatabaseId: null,
-        openAIKey: null,
-        claudeKey: null,
-        fireworksKey: null,
-        geminiKey: null,
+        answerLLM: null,
       };
     }
     throw error;

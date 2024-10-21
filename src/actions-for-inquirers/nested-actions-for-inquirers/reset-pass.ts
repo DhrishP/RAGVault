@@ -1,11 +1,11 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { UserStore } from "../types/index.js";
+import { UserStore } from "../../types/index.js";
 import { createSpinner } from "nanospinner";
-import { sleep } from "../utils/sleep.js";
-import { hashPassword } from "../utils/bcrypt.js";
+import { sleep } from "../../utils/sleep.js";
+import { hashPassword } from "../../utils/bcrypt.js";
 import bcrypt from "bcrypt";
-import { saveUsers } from "./user-transactions.js";
+import { saveUsers } from "../../utils/user-transactions.js";
 
 export async function resetPassword(users: UserStore): Promise<void> {
   const { username } = await inquirer.prompt([
