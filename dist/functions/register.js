@@ -4,8 +4,8 @@ import { createSpinner } from "nanospinner";
 import { sleep } from "../utils/sleep.js";
 import { hashPassword } from "../utils/bcrypt.js";
 import { saveUsers } from "./user-transactions.js";
-export async function register(users) {
-    const { username, password, confirmPassword, securityQuestion, securityAnswer, } = await inquirer.prompt([
+export async function register(users, session) {
+    const { username, password, securityQuestion, securityAnswer } = await inquirer.prompt([
         {
             type: "input",
             name: "username",
@@ -47,6 +47,7 @@ export async function register(users) {
         return null;
     }
     users[username] = {
+        username,
         password: await hashPassword(password),
         securityQuestion,
         securityAnswer: await hashPassword(securityAnswer),
@@ -58,5 +59,5 @@ export async function register(users) {
     };
     await saveUsers(users);
     spinner.success({ text: chalk.green("Registration successful!") });
-    return username;
+    return users[username];
 }

@@ -26,7 +26,7 @@ export async function login(users) {
     }
     if (await bcrypt.compare(password, users[username].password)) {
         spinner.success({ text: chalk.green("Login successful!") });
-        return username;
+        return users[username];
     }
     else {
         spinner.error({ text: chalk.red("Invalid password.") });

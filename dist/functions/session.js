@@ -9,12 +9,6 @@ export async function loadSession() {
         if (error.code === "ENOENT") {
             return {
                 currentUser: null,
-                notionToken: null,
-                notionDatabaseId: null,
-                openAIKey: null,
-                claudeKey: null,
-                fireworksKey: null,
-                geminiKey: null,
             };
         }
         throw error;
