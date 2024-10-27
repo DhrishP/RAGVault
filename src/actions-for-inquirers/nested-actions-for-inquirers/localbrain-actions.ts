@@ -31,7 +31,7 @@ export const LocalBrainActions = async (
           documents: [data],
           ids: [nanoid()],
         });
-        spinner.success({ text: "Data added to local brain" });
+        spinner.success({ text: "\nData added to local brain\n" });
         const newActionSucess = await promptAuthenticatedUser(username);
         await handleAuthenticatedAction(
           newActionSucess,

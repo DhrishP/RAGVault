@@ -68,8 +68,7 @@ export async function register(
     securityAnswer: await hashPassword(securityAnswer),
     openAIKey: "",
     collectionName: "",
-    fireworksKey: "MaTLjtWER5HplbJQBJXVq1Mo70LTudI6GbQb3Gobf6XbOvJN",
-    geminiKey: "AIzaSyDzmPffYdq4w9H4ZoT1zMRCagepCMCIYvg",
+    fireworksKey: "",
     claudeKey: "",
   };
   await saveUsers(users);

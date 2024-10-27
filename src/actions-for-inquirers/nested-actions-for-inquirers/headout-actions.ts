@@ -16,7 +16,7 @@ export async function HeadOutActions(
 ) {
   switch (action) {
     case "Exit(Session will be saved)":
-      console.log(chalk.blueBright("You shall be remembered !!"));
+      console.log(chalk.blueBright("\nYou shall be remembered !!\n"));
       process.exit(0);
     case "Logout":
       const spinner = createSpinner("Logging out...").start();
