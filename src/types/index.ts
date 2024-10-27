@@ -1,4 +1,5 @@
 export interface User {
+  username: string;
   password: string;
   securityQuestion: string;
   securityAnswer: string;
@@ -16,11 +17,15 @@ export interface UserStore {
 }
 
 export interface Session {
-  currentUser: string | null;
-  notionToken: string | null;
-  notionDatabaseId: string | null;
-  openAIKey: string | null;
-  claudeKey: string | null;
-  fireworksKey: string | null;
-  geminiKey: string | null;
+  currentUser: User | null;
+  answerLLM: LLM | null; // FOR FUTURE USE
+}
+
+export enum LLM {
+  // FOR FUTURE USE
+  OPENAI = "openai",
+  CLAUDE = "claude",
+  FIREWORKS = "fireworks",
+  GEMINI = "gemini",
+  CHROMADB = "chromadb",
 }
