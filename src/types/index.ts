@@ -3,13 +3,12 @@ export interface User {
   password: string;
   securityQuestion: string;
   securityAnswer: string;
-  openAIKey: string;
+  openAIKey?: string;
   collectionName: string;
   notionToken?: string;
   notionDatabaseId?: string;
   claudeKey?: string;
-  fireworksKey: string;
-  geminiKey: string;
+  fireworksKey?: string;
 }
 
 export interface UserStore {
@@ -26,6 +25,15 @@ export enum LLM {
   OPENAI = "openai",
   CLAUDE = "claude",
   FIREWORKS = "fireworks",
-  GEMINI = "gemini",
-  CHROMADB = "chromadb",
+}
+
+export interface ConversationEntry {
+  question: string;
+  response: string;
+}
+
+export interface HistoryFile {
+  firstQuestion: string;
+  filename: string;
+  timestamp: string;
 }
