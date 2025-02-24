@@ -15,6 +15,6 @@ Currently Building🔨:
 
 docker running command:
 
-```docker run -d --rm --name chromadb -v ./chroma:/chroma/chroma -p 8000:8000 chromadb/chroma:latest```
+```docker run -d --name chromadb -p 8000:8000 chromadb/chroma```
 
 **NOTE** : THE PORT SHOULD BE KEPT ***8000***
