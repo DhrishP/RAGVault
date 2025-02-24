@@ -72,9 +72,28 @@ export const LocalBrainActions = async (
           );
           return;
         }
+        const collection = await getCollection(username + "-ragvault");
+        const spinner = createSpinner("Adding Data...").start();
+        await collection.add({
+          documents: [extractedText],
+          ids: [nanoid()],
+        });
+        spinner.success({ text: "\nData added to local brain\n" });
+        const newActionSucess = await promptAuthenticatedUser(username);
+        await handleAuthenticatedAction(
+          newActionSucess,
+          username,
+          session,
+          users
+        );
+        break;
       } catch (error) {
         console.error("Error reading the file:", error);
         return;
       }
+    case "Back":
+      const newActionBack = await promptAuthenticatedUser(username);
+      await handleAuthenticatedAction(newActionBack, username, session, users);
+      break;
   }
 };
