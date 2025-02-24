@@ -8,7 +8,10 @@ import { SettingsActions } from "./settings-actions.js";
 import { answerQuestionOpenAI } from "../../helpers/gpt-4o.js";
 import { answerQuestionClaude } from "../../helpers/claude.js";
 import { answerQuestionFireworks } from "../../helpers/fireworks.js";
-
+import { saveConversationHistory } from "../../helpers/history.js";
+import { answerQuestionGemini } from "../../helpers/gemini.js";
+import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
+import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
 export const QuestionActions = async (
   action: string,
   username: string,
@@ -67,6 +70,8 @@ export const QuestionActions = async (
         }
 
         if (conversationHistory.length > 0) {
+          await saveConversationHistory(conversationHistory, username);
+
           console.log("\nConversation History:");
           conversationHistory.forEach((entry, index) => {
             console.log(`\n--- Question ${index + 1} ---`);
@@ -74,12 +79,14 @@ export const QuestionActions = async (
             console.log(`A: ${entry.response}`);
           });
         }
-        break;
       } catch (error) {
         console.error("\nSomething went wrong\n");
       }
+      break;
     case "Using Remote LLM":
       const sessionLLM = session.answerLLM;
+      let response;
+      let conversationHistory = [];
 
       const switchPass =
         sessionLLM === LLM.OPENAI
@@ -88,6 +95,8 @@ export const QuestionActions = async (
           ? "claude"
           : sessionLLM === LLM.FIREWORKS
           ? "fireworks"
+          : sessionLLM === LLM.GEMINI
+          ? "gemini"
           : null;
 
       switch (switchPass) {
@@ -103,9 +112,25 @@ export const QuestionActions = async (
             ]);
             users[username].openAIKey = openAIKey;
             await saveUsers(users);
-            break;
           }
-          answerQuestionOpenAI(users[username].openAIKey, username);
+          const { question } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "question",
+              message: "What would you like to ask?",
+            },
+          ]);
+          response = await answerQuestionOpenAI(
+            users[username].openAIKey,
+            username
+          );
+          if (response) {
+            conversationHistory.push({
+              question: question,
+              response: response,
+            });
+            await saveConversationHistory(conversationHistory, username);
+          }
           break;
         case "claude":
           if (!users[username].claudeKey) {
@@ -121,9 +146,31 @@ export const QuestionActions = async (
           }
           answerQuestionFireworks(users[username].fireworksKey, username);
           break;
+        case "gemini":
+          if (!users[username].geminiKey) {
+            console.log("Gemini key not found");
+            break;
+          }
+          const responsegemini = await answerQuestionGemini(
+            users[username].geminiKey,
+            username
+          );
+          if (responsegemini) {
+            conversationHistory.push({
+              question: question,
+              response: responsegemini,
+            });
+          }
+          await saveConversationHistory(conversationHistory, username);
+          break;
         default:
           const action = await SettingsCommands();
           SettingsActions(action, session, username, users);
       }
+      break;
+    case "Back":
+      const newAction = await promptAuthenticatedUser(username);
+      await handleAuthenticatedAction(newAction, username, session, users);
+      break;
   }
 };
