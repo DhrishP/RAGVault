@@ -1,13 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
 import { ConversationEntry, HistoryFile } from "../types/index.js";
+import { HISTORY_DIR } from "../constant/index.js";
 
 export async function getConversationHistory(
   username: string
 ): Promise<HistoryFile[]> {
   try {
-    const historyDir = path.join(process.cwd(), "conversation-history");
-    const files = await fs.readdir(historyDir);
+    await fs.mkdir(HISTORY_DIR, { recursive: true });
+    const files = await fs.readdir(HISTORY_DIR);
 
     // Filter files for the specific user
     const userFiles = files.filter((file) =>
@@ -18,7 +19,7 @@ export async function getConversationHistory(
     const historyFiles: HistoryFile[] = await Promise.all(
       userFiles.map(async (filename) => {
         const content = await fs.readFile(
-          path.join(historyDir, filename),
+          path.join(HISTORY_DIR, filename),
           "utf-8"
         );
         try {
@@ -52,12 +53,11 @@ export async function getConversationHistory(
   }
 }
 
-async function readConversationFile(
+export async function readConversationFile(
   filename: string
 ): Promise<ConversationEntry[]> {
   try {
-    const historyDir = path.join(process.cwd(), "conversation-history");
-    const filePath = path.join(historyDir, filename);
+    const filePath = path.join(HISTORY_DIR, filename);
     const content = await fs.readFile(filePath, "utf-8");
     return JSON.parse(content);
   } catch (error) {
@@ -72,10 +72,12 @@ export const saveConversationHistory = async (
 ): Promise<void> => {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const historyDir = path.join(process.cwd(), "conversation-history");
-    const filename = path.join(historyDir, `chat-${username}-${timestamp}.txt`);
+    await fs.mkdir(HISTORY_DIR, { recursive: true });
+    const filename = path.join(
+      HISTORY_DIR,
+      `chat-${username}-${timestamp}.txt`
+    );
 
-    await fs.mkdir(historyDir, { recursive: true });
     await fs.writeFile(
       filename,
       JSON.stringify(conversationHistory, null, 2),

@@ -10,7 +10,11 @@ import { LocalBrainCommands } from "../inquirer-commands/nested-commands/localbr
 import { Session, UserStore } from "../types/index.js";
 import { QuestionActions } from "./nested-actions-for-inquirers/question.js";
 import { AskAQuestionCommands } from "../inquirer-commands/nested-commands/question.js";
-
+import { readConversationFile } from "../helpers/history.js";
+import {
+  getConversationHistory,
+} from "../helpers/history.js";
+import inquirer from "inquirer";
 
 export async function handleAuthenticatedAction(
   action: string,
@@ -22,13 +26,6 @@ export async function handleAuthenticatedAction(
     case "Ask a question🤔":
       const question = await AskAQuestionCommands();
       await QuestionActions(question, currentUserName, users, session);
-      // const AskAgainAction = await promptAuthenticatedUser(currentUserName);
-      // await handleAuthenticatedAction(
-      //   AskAgainAction,
-      //   currentUserName,
-      //   session,
-      //   users
-      // );
     case "Add data to your local brain🧠":
       const isChromaDockerRunning = await checkChromaDocker();
       if (isChromaDockerRunning) {
@@ -47,6 +44,49 @@ export async function handleAuthenticatedAction(
           session,
           users
         );
+      }
+    case "History🔍":
+      try {
+        const histories = await getConversationHistory(currentUserName);
+
+        if (histories.length === 0) {
+          console.log("\nNo conversation history found.");
+          const newAction = await promptAuthenticatedUser(currentUserName);
+          await handleAuthenticatedAction(newAction, currentUserName, session, users);
+          break;
+        }
+
+        const { selectedFile } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "selectedFile",
+            message: "Select a conversation to view:",
+            choices: histories.map((history) => ({
+              name: `[${history.timestamp}] ${history.firstQuestion.substring(
+                0,
+                60
+              )}...`,
+              value: history.filename,
+            })),
+          },
+        ]);
+
+        const conversations = await readConversationFile(selectedFile);
+        console.log("\nConversation History:\n");
+        conversations.forEach((entry, index) => {
+          console.log(`\n--- Question ${index + 1} ---`);
+          console.log(`Q: ${entry.question}`);
+          console.log(`A: ${entry.response}`);
+        });
+
+        const newAction = await promptAuthenticatedUser(currentUserName);
+        await handleAuthenticatedAction(newAction, currentUserName, session, users);
+        break;
+      } catch (error) {
+        console.error("\nError retrieving conversation history:", error);
+        const newAction = await promptAuthenticatedUser(currentUserName);
+        await handleAuthenticatedAction(newAction, currentUserName, session, users);
+        break;
       }
     case "Clear CLI🧹":
       console.clear();

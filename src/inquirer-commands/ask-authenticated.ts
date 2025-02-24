@@ -13,6 +13,7 @@ export async function promptAuthenticatedUser(currentUser: string) {
         "Ask a question🤔",
         "Add data to your local brain🧠",
         "Clear CLI🧹",
+        "History🔍",
         "Settings",
         "Head Out👋",
       ],
