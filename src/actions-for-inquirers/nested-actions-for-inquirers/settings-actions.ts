@@ -8,6 +8,9 @@ import { SettingsCommands } from "../../inquirer-commands/nested-commands/settin
 import { createSpinner } from "nanospinner";
 import { UserStore } from "../../types/index.js";
 import { saveUsers } from "../../utils/user-transactions.js";
+import { ChooseLLMCommands } from "../../inquirer-commands/nested-commands/nested-nested-commands/chooseLLM.js";
+import { saveSession } from "../../utils/session.js";
+import { LLM } from "../../types/index.js";
 
 export async function SettingsActions(
   action: string,
@@ -21,13 +24,55 @@ export async function SettingsActions(
         {
           type: "list",
           name: "aiProvider",
-          message: "Choose an AI provider to add a key for:",
-          choices: ["openAI", "claude", "fireworks", "back"],
+          message: "Choose an AI provider to add/update a key for:",
+          choices: [
+            {
+              name: `OpenAI ${
+                users[currentUser].openAIKey ? "(Key Set ✓)" : ""
+              }`,
+              value: "openAI",
+            },
+            {
+              name: `Claude ${
+                users[currentUser].claudeKey ? "(Key Set ✓)" : ""
+              }`,
+              value: "claude",
+            },
+            {
+              name: `Fireworks ${
+                users[currentUser].fireworksKey ? "(Key Set ✓)" : ""
+              }`,
+              value: "fireworks",
+            },
+            {
+              name: `Gemini ${
+                users[currentUser].geminiKey ? "(Key Set ✓)" : ""
+              }`,
+              value: "gemini",
+            },
+            "back",
+          ],
         },
       ]);
 
       if (aiProvider !== "back") {
-        const { apiKey }: { apiKey: string } = await inquirer.prompt([
+        const keyMapping: Record<string, keyof User> = {
+          openAI: "openAIKey",
+          claude: "claudeKey",
+          fireworks: "fireworksKey",
+          gemini: "geminiKey",
+        };
+
+        const currentKey = users[currentUser][keyMapping[aiProvider]];
+        if (currentKey) {
+          console.log(
+            chalk.yellow(
+              `Current ${aiProvider} key is set. Enter new key to update or 'skip' to keep current.`
+            )
+          );
+        }
+
+        const { apiKey } = await inquirer.prompt([
           {
             type: "input",
             name: "apiKey",
@@ -81,11 +126,72 @@ export async function SettingsActions(
       await SettingsActions(newNotionAction, session, currentUser, users);
 
     case "Choose Remote LLM":
-     
+      const llmAction = await ChooseLLMCommands();
+      switch (llmAction) {
+        case "openAI":
+          session.answerLLM = LLM.OPENAI;
+          if (!users[currentUser].openAIKey) {
+            console.log(
+              chalk.yellow(
+                "\nNote: OpenAI API key is not set. You can set it in 'Add AI Providers Keys'"
+              )
+            );
+          }
+          break;
+        case "claude":
+          session.answerLLM = LLM.CLAUDE;
+          if (!users[currentUser].claudeKey) {
+            console.log(
+              chalk.yellow(
+                "\nNote: Claude API key is not set. You can set it in 'Add AI Providers Keys'"
+              )
+            );
+          }
+          break;
+        case "fireworks":
+          session.answerLLM = LLM.FIREWORKS;
+          if (!users[currentUser].fireworksKey) {
+            console.log(
+              chalk.yellow(
+                "\nNote: Fireworks API key is not set. You can set it in 'Add AI Providers Keys'"
+              )
+            );
+          }
+        case "gemini":
+          session.answerLLM = LLM.GEMINI;
+          if (!users[currentUser].geminiKey) {
+            console.log(
+              chalk.yellow(
+                "\nNote: Gemini API key is not set. You can set it in 'Add AI Providers Keys'"
+              )
+            );
+          }
+          break;
+        case "Back":
+          const newActionBack = await SettingsCommands();
+          await SettingsActions(newActionBack, session, currentUser, users);
+          return;
+      }
+
+      await saveSession(session);
+      const spinner = createSpinner("Updating LLM preference...").start();
+      await sleep(1000);
+      spinner.success({
+        text: chalk.green("LLM preference updated successfully!"),
+      });
+
+      const newAction = await SettingsCommands();
+      await SettingsActions(newAction, session, currentUser, users);
+      break;
+
     case "Back":
-      //recursive call
-      const newAction = await promptAuthenticatedUser(currentUser);
-      await handleAuthenticatedAction(newAction, currentUser, session, users);
+      const newActionBack = await promptAuthenticatedUser(currentUser);
+      await handleAuthenticatedAction(
+        newActionBack,
+        currentUser,
+        session,
+        users
+      );
       break;
   }
 }
