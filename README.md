@@ -22,6 +22,7 @@ Currently Building🔨:
 1. Supports for different embedding models from different AI providers
 2. History for remote LLM (followup history)
 3. Removing sdk's of AI providers from codebase and using their urls instead
+4. EXPORT data functionality
 
 docker running command:
 
