@@ -10,14 +10,60 @@ import cfonts from "cfonts";
 import { checkChromaDocker } from "./utils/check-chromadocker.js";
 import { generateCollectionName } from "./utils/generate-collectionName.js";
 import { Session, UserStore } from "./types/index.js";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import path from 'path';
+
+const execAsync = promisify(exec);
+
+async function startChromaDocker() {
+  try {
+    // First, check if container exists and try to start it
+    try {
+      await execAsync('docker start chromadb');
+      console.log('Existing ChromaDB Docker container started successfully');
+      return true;
+    } catch (error) {
+      // If container doesn't exist, create a new one
+      await execAsync('docker run -d --name chromadb -p 8000:8000 chromadb/chroma');
+      console.log('New ChromaDB Docker container started successfully');
+      return true;
+    }
+  } catch (error) {
+    console.error('Failed to start ChromaDB Docker container:', error);
+    return false;
+  }
+}
+
+async function ensureHistoryDir() {
+  const historyDir = path.join(process.cwd(), "conversation-history");
+  try {
+    await fs.mkdir(historyDir, { recursive: true });
+  } catch (error) {
+    console.error("Error creating history directory:", error);
+  }
+}
 
 export async function mainInq(): Promise<void> {
   await ensureAppDir();
+  await ensureHistoryDir();
 
   const users: UserStore = await loadUsers();
   let session: Session = await loadSession();
   let currentUserName: string | undefined = session.currentUser?.username;
-  const isChromaDBRunning = await checkChromaDocker();
+  let isChromaDBRunning = await checkChromaDocker();
+  
+  if (!isChromaDBRunning) {
+    console.log('ChromaDB Docker is not running. Attempting to start it...');
+    const started = await startChromaDocker();
+    if (started) {
+      // Wait a few seconds for the container to fully start
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      isChromaDBRunning = await checkChromaDocker();
+    }
+  }
+
   if (!isChromaDBRunning) {
     cfonts.say("Error", {
       font: "block",
@@ -31,7 +77,7 @@ export async function mainInq(): Promise<void> {
       gradient: false,
     });
     console.log(
-      "Please run the docker container for ChromaDB to start on port 8000."
+      "Unable to start ChromaDB Docker. Please make sure Docker is installed and running on port 8000."
     );
     process.exit(1);
   }
