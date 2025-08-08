@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import { UserStore } from "../../types/index.js";
 import { createSpinner } from "nanospinner";
 import { sleep } from "../../utils/sleep.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { User } from "../../types/index.js";
 export async function login(users: UserStore): Promise<User | null> {
   const { username, password } = await inquirer.prompt([

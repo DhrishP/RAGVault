@@ -4,7 +4,7 @@ import { UserStore } from "../../types/index.js";
 import { createSpinner } from "nanospinner";
 import { sleep } from "../../utils/sleep.js";
 import { hashPassword } from "../../utils/bcrypt.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { saveUsers } from "../../utils/user-transactions.js";
 
 export async function resetPassword(users: UserStore): Promise<void> {
