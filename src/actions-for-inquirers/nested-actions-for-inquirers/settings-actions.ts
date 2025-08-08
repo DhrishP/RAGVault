@@ -103,6 +103,7 @@ export async function SettingsActions(
       // Recursive call to allow adding multiple keys
       const newActionProvider = await SettingsCommands();
       await SettingsActions(newActionProvider, session, currentUser, users);
+      break;
 
     case "Set Notion Configurations":
       const { notionToken } = await inquirer.prompt([
@@ -124,6 +125,7 @@ export async function SettingsActions(
       const newNotionAction = await SettingsCommands();
       //recursive call
       await SettingsActions(newNotionAction, session, currentUser, users);
+      break;
 
     case "Choose Remote LLM":
       const llmAction = await ChooseLLMCommands();
@@ -157,6 +159,7 @@ export async function SettingsActions(
               )
             );
           }
+          break;
         case "gemini":
           session.answerLLM = LLM.GEMINI;
           if (!users[currentUser].geminiKey) {

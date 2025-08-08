@@ -26,6 +26,7 @@ export async function handleAuthenticatedAction(
     case "Ask a question🤔":
       const question = await AskAQuestionCommands();
       await QuestionActions(question, currentUserName, users, session);
+      break;
     case "Add data to your local brain🧠":
       const isChromaDockerRunning = await checkChromaDocker();
       if (isChromaDockerRunning) {
@@ -45,6 +46,7 @@ export async function handleAuthenticatedAction(
           users
         );
       }
+      break;
     case "History🔍":
       try {
         const histories = await getConversationHistory(currentUserName);
