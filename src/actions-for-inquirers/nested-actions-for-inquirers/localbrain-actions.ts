@@ -3,11 +3,11 @@ import { Session, UserStore } from "../../types/index.js";
 import { getCollection } from "../../utils/chroma-client.js";
 import { nanoid } from "nanoid";
 import { createSpinner } from "nanospinner";
-import { sleep } from "../../utils/sleep.js";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
+import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
 
 export const LocalBrainActions = async (
   action: string,
@@ -45,11 +45,12 @@ export const LocalBrainActions = async (
         break;
       }
     case "Add Data using PDF/DOCX":
+      inquirer.registerPrompt("file-tree-selection", inquirerFileTreeSelection);
       const { filePath } = await inquirer.prompt<{ filePath: string }>([
         {
-          type: "input",
+          type: "file-tree-selection",
           name: "filePath",
-          message: "Please enter the path to your PDF or DOCX file:",
+          message: "Please select a PDF or DOCX file:",
         },
       ]);
 
