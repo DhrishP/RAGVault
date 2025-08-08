@@ -6,7 +6,12 @@ export async function SettingsCommands() {
       type: "list",
       name: "action",
       message: "Here are the list of settings",
-      choices: ["Add AI Providers Keys", "Choose Remote LLM", "Back"],
+      choices: [
+        "Add AI Providers Keys",
+        "Choose Remote LLM",
+        "Choose Embedding Model",
+        "Back",
+      ],
     },
   ]);
   return action;

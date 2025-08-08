@@ -10,6 +10,7 @@ export interface User {
   claudeKey?: string;
   fireworksKey?: string;
   geminiKey?: string;
+  embeddingModelName?: string;
 }
 
 export interface UserStore {
@@ -19,6 +20,7 @@ export interface UserStore {
 export interface Session {
   currentUser: User | null;
   answerLLM: LLM | null;
+  embeddingLLM: embeddingLLM | null;
 }
 
 export enum LLM {
@@ -26,6 +28,10 @@ export enum LLM {
   CLAUDE = "claude",
   FIREWORKS = "fireworks",
   GEMINI = "gemini",
+}
+
+export enum embeddingLLM {
+  OPENAI = "openai",
 }
 
 export interface ConversationEntry {

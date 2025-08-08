@@ -11,6 +11,7 @@ export async function loadSession(): Promise<Session> {
       return {
         currentUser: null,
         answerLLM: null,
+        embeddingLLM: null,
       };
     }
     throw error;

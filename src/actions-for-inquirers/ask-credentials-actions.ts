@@ -22,7 +22,7 @@ export async function handleCredentialsAction(
         },
       ]);
       await client.createCollection({
-        embeddingFunction: embeddingFunction,
+        embeddingFunction: await embeddingFunction(),
         name: `${res.question}`,
         metadata: { hnsw: "cosine" },
       });

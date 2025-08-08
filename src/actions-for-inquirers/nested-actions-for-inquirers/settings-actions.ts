@@ -1,16 +1,21 @@
 import chalk from "chalk";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
-import { Session, User } from "../../types/index.js";
+import {
+  Session,
+  User,
+  embeddingLLM,
+  UserStore,
+  LLM,
+} from "../../types/index.js";
 import inquirer from "inquirer";
 import { sleep } from "../../utils/sleep.js";
 import { SettingsCommands } from "../../inquirer-commands/nested-commands/settings.js";
 import { createSpinner } from "nanospinner";
-import { UserStore } from "../../types/index.js";
 import { saveUsers } from "../../utils/user-transactions.js";
 import { ChooseLLMCommands } from "../../inquirer-commands/nested-commands/nested-nested-commands/chooseLLM.js";
 import { saveSession } from "../../utils/session.js";
-import { LLM } from "../../types/index.js";
+import { ChooseEmbeddingModel } from "../../inquirer-commands/nested-commands/nested-nested-commands/choose-embedding-model.js";
 
 export async function SettingsActions(
   action: string,
@@ -185,6 +190,44 @@ export async function SettingsActions(
 
       const newAction = await SettingsCommands();
       await SettingsActions(newAction, session, currentUser, users);
+      break;
+
+    case "Choose Embedding Model":
+      const embeddingAction = await ChooseEmbeddingModel();
+      switch (embeddingAction) {
+        case "OpenAI":
+          session.embeddingLLM = embeddingLLM.OPENAI;
+          if (!users[currentUser].openAIKey) {
+            console.log(
+              chalk.yellow(
+                "\nNote: OpenAI API key is not set. You can set it in 'Add AI Providers Keys'"
+              )
+            );
+          }
+          const { modelName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "modelName",
+              message: "Enter the OpenAI embedding model name:",
+              default: "text-embedding-3-small",
+            },
+          ]);
+          users[currentUser].embeddingModelName = modelName;
+          await saveUsers(users);
+          break;
+        case "Back":
+          const newActionBack = await SettingsCommands();
+          await SettingsActions(newActionBack, session, currentUser, users);
+          return;
+      }
+      await saveSession(session);
+      const spinnerEmbedding = createSpinner("Updating Embedding Model...").start();
+      await sleep(1000);
+      spinnerEmbedding.success({
+        text: chalk.green("Embedding Model updated successfully!"),
+      });
+      const newActionEmbedding = await SettingsCommands();
+      await SettingsActions(newActionEmbedding, session, currentUser, users);
       break;
 
     case "Back":
