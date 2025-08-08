@@ -3,7 +3,7 @@ Well , want to keep your passwords , data privately in your local vector DB and 
 Steps to use it:
 
 1. Download ChromaDB docker container
-2. run it in port 8000
+2. run it in port 8765
    and...
 
 ```node
@@ -26,6 +26,6 @@ Currently Building🔨:
 
 docker running command:
 
-`docker run -d --name chromadb -p 8000:8000 chromadb/chroma`
+`docker run -d --name chromadb -p 8765:8000 chromadb/chroma`
 
 **NOTE** : THE PORT SHOULD BE KEPT **_8000_**
