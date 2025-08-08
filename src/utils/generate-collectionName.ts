@@ -1,5 +1,5 @@
 import { client } from "./chroma-client.js";
-import { DefaultEmbeddingFunction } from "chromadb";
+import { DefaultEmbeddingFunction } from "@chroma-core/default-embed";
 
 export async function generateCollectionName(username: string) {
   let collection = await client.getOrCreateCollection({

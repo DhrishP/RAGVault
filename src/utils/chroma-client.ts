@@ -1,12 +1,12 @@
 import {
-  ChromaClient,
-  OpenAIEmbeddingFunction,
-  DefaultEmbeddingFunction,
+  ChromaClient
 } from "chromadb";
 import dotenv from "dotenv";
+import { OpenAIEmbeddingFunction } from "@chroma-core/openai";
+
 dotenv.config();
 
-export const client = new ChromaClient({ path: "http://localhost:8000" });
+export const client = new ChromaClient({ host:"localhost",port:8765 });
 
 export const getCollection = async (collectionName: string) => {
   const collection = client.getOrCreateCollection({ name: collectionName });
@@ -14,6 +14,6 @@ export const getCollection = async (collectionName: string) => {
 };
 
 export const embeddingFunction = new OpenAIEmbeddingFunction({
-  openai_api_key: process.env.OPENAI_API_KEY!,
-  openai_model: "text-embedding-3-small",
+  apiKey: process.env.OPENAI_API_KEY!,
+  modelName: "text-embedding-3-small",
 });
