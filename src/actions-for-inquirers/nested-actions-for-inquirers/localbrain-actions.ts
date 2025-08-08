@@ -3,7 +3,7 @@ import { Session, UserStore } from "../../types/index.js";
 import { getCollection } from "../../utils/chroma-client.js";
 import { nanoid } from "nanoid";
 import { createSpinner } from "nanospinner";
-import pdf from "pdf-parse";
+import pdfToText from "pdf-to-text";
 import fs from "fs/promises";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
@@ -60,9 +60,14 @@ export const LocalBrainActions = async (
       try {
         let extractedText = "";
         if (fileExtension === "pdf") {
-          const dataBuffer = await fs.readFile(trimmedFilePath);
-          const data = await pdf(dataBuffer);
-          extractedText = data.text;
+          extractedText = await new Promise((resolve, reject) => {
+            pdfToText(trimmedFilePath, (err, data) => {
+              if (err) {
+                return reject(err);
+              }
+              resolve(data);
+            });
+          });
         } else if (fileExtension === "txt" || fileExtension === "md") {
           extractedText = await fs.readFile(trimmedFilePath, "utf-8");
         } else {
