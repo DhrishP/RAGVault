@@ -1,6 +1,6 @@
 {
   "name": "ragvault",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "main": "./dist/index.js",
   "type": "module",
   "scripts": {
@@ -8,11 +8,10 @@
     "build": "tsc"
   },
   "bin": {
-    "runname": "./dist/index.js"
+    "ragvault": "./dist/index.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"  
   ],
   "author": "DhrishP",
   "license": "MIT",
