@@ -1,5 +1,4 @@
 import inquirer from "inquirer";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCollection } from "../utils/chroma-client.js";
 
 export const answerQuestionGemini = async (key: string, username: string) => {
@@ -18,16 +17,47 @@ export const answerQuestionGemini = async (key: string, username: string) => {
   });
   console.log(chunks, "chunks");
 
-  const genAI = new GoogleGenerativeAI(key);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
+  // Prepare the prompt using the retrieved chunks
   const prompt = `You are a helpful assistant that can answer questions about the provided chunks. ${chunks.documents[0]
     .map((doc) => doc)
     .join("\n")}\n\nQuestion: ${query}`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
+  // Prepare the request body for Gemini REST API
+  const body = {
+    contents: [
+      {
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ],
+  };
 
-  console.log("\n", response + "\n");
-  return response;
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": key,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  // Extract the response text from the Gemini API response
+  const answer =
+    data.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "No response from Gemini API.";
+
+  console.log("\n", answer + "\n");
+  return answer;
 };

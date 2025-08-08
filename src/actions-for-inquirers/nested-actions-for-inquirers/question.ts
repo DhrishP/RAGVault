@@ -5,7 +5,7 @@ import { saveUsers } from "../../utils/user-transactions.js";
 
 import { SettingsCommands } from "../../inquirer-commands/nested-commands/settings.js";
 import { SettingsActions } from "./settings-actions.js";
-import { answerQuestionOpenAI } from "../../helpers/gpt-4o.js";
+import { answerQuestionOpenAI } from "../../helpers/gpt.js";
 import { answerQuestionClaude } from "../../helpers/claude.js";
 import { saveConversationHistory } from "../../helpers/history.js";
 import { answerQuestionGemini } from "../../helpers/gemini.js";
