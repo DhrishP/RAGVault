@@ -68,7 +68,6 @@ export async function register(
     securityAnswer: await hashPassword(securityAnswer),
     openAIKey: "",
     collectionName: "",
-    fireworksKey: "",
     claudeKey: "",
   };
   await saveUsers(users);

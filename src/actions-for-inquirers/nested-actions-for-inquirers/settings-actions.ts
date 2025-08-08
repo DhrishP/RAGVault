@@ -44,12 +44,6 @@ export async function SettingsActions(
               value: "claude",
             },
             {
-              name: `Fireworks ${
-                users[currentUser].fireworksKey ? "(Key Set ✓)" : ""
-              }`,
-              value: "fireworks",
-            },
-            {
               name: `Gemini ${
                 users[currentUser].geminiKey ? "(Key Set ✓)" : ""
               }`,
@@ -64,7 +58,6 @@ export async function SettingsActions(
         const keyMapping: Record<string, keyof User> = {
           openAI: "openAIKey",
           claude: "claudeKey",
-          fireworks: "fireworksKey",
           gemini: "geminiKey",
         };
 
@@ -151,16 +144,6 @@ export async function SettingsActions(
             console.log(
               chalk.yellow(
                 "\nNote: Claude API key is not set. You can set it in 'Add AI Providers Keys'"
-              )
-            );
-          }
-          break;
-        case "fireworks":
-          session.answerLLM = LLM.FIREWORKS;
-          if (!users[currentUser].fireworksKey) {
-            console.log(
-              chalk.yellow(
-                "\nNote: Fireworks API key is not set. You can set it in 'Add AI Providers Keys'"
               )
             );
           }

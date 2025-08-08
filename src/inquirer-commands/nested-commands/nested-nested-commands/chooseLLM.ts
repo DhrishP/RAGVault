@@ -6,7 +6,7 @@ export async function ChooseLLMCommands() {
       type: "list",
       name: "action",
       message: "Choose a remote LLM:",
-      choices: ["openAI", "claude", "fireworks", "gemini", "Back"],
+      choices: ["openAI", "claude", "gemini", "Back"],
     },
   ]);
   return action;

@@ -7,7 +7,6 @@ import { SettingsCommands } from "../../inquirer-commands/nested-commands/settin
 import { SettingsActions } from "./settings-actions.js";
 import { answerQuestionOpenAI } from "../../helpers/gpt-4o.js";
 import { answerQuestionClaude } from "../../helpers/claude.js";
-import { answerQuestionFireworks } from "../../helpers/fireworks.js";
 import { saveConversationHistory } from "../../helpers/history.js";
 import { answerQuestionGemini } from "../../helpers/gemini.js";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
@@ -97,8 +96,6 @@ export const QuestionActions = async (
           ? "openai"
           : sessionLLM === LLM.CLAUDE
           ? "claude"
-          : sessionLLM === LLM.FIREWORKS
-          ? "fireworks"
           : sessionLLM === LLM.GEMINI
           ? "gemini"
           : null;
@@ -142,13 +139,6 @@ export const QuestionActions = async (
             break;
           }
           answerQuestionClaude(users[username].claudeKey, username);
-          break;
-        case "fireworks":
-          if (!users[username].fireworksKey) {
-            console.log("Fireworks key not found");
-            break;
-          }
-          answerQuestionFireworks(users[username].fireworksKey, username);
           break;
         case "gemini":
           if (!users[username].geminiKey) {

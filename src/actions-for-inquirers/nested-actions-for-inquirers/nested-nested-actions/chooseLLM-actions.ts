@@ -15,9 +15,6 @@ export async function ChooseLLMAction(users: UserStore, username: string) {
     case "claude":
       session.answerLLM = LLM.CLAUDE;
       break;
-    case "fireworks":
-      session.answerLLM = LLM.FIREWORKS;
-      break;
     case "Back":
       const action = await SettingsCommands();
       SettingsActions(action, session, username, users);

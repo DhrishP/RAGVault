@@ -8,7 +8,6 @@ export interface User {
   notionToken?: string;
   notionDatabaseId?: string;
   claudeKey?: string;
-  fireworksKey?: string;
   geminiKey?: string;
   embeddingModelName?: string;
 }
@@ -26,7 +25,6 @@ export interface Session {
 export enum LLM {
   OPENAI = "openai",
   CLAUDE = "claude",
-  FIREWORKS = "fireworks",
   GEMINI = "gemini",
 }
 
