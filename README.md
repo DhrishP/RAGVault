@@ -2,13 +2,11 @@ Well , want to keep your passwords , data privately in your local vector DB and 
 
 Steps to use it:
 
-1. Download ChromaDB docker container
-2. run it in port 8765
-   and...
-
 ```node
-npx ragvault
-```
+npm i -g ragvault
+``` 
+after its installed then just 
+
 
 What it does:
 
