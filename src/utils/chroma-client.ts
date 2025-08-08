@@ -14,6 +14,6 @@ export const getCollection = async (collectionName: string) => {
 };
 
 export const embeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: process.env.OPENAI_API_KEY!,
+  apiKey: process.env.OPENAI_API_KEY||"HI-TST-1",
   modelName: "text-embedding-3-small",
 });

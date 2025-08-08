@@ -19,23 +19,49 @@ const execAsync = promisify(exec);
 
 async function startChromaDocker() {
   try {
-    // First, check if container exists and try to start it
+    // Check if Docker is available
     try {
-      await execAsync('docker start chromadb');
-      console.log('Existing ChromaDB Docker container started successfully');
-      return true;
+      await execAsync('docker --version');
     } catch (error) {
-      // If container doesn't exist, create a new one
-      await execAsync('docker run -d --name chromadb -p 8000:8000 chromadb/chroma');
-      console.log('New ChromaDB Docker container started successfully');
-      return true;
+      console.error('Docker is not installed or not available in PATH.');
+      return false;
     }
+
+    // Check if chromadb/chroma image is available
+    try {
+      await execAsync('docker image inspect chromadb/chroma:latest >/dev/null 2>&1');
+    } catch (error) {
+      console.log('ChromaDB image not found locally. Pulling from Docker Hub...');
+      try {
+        await execAsync('docker pull chromadb/chroma:latest');
+        console.log('ChromaDB image pulled successfully.');
+      } catch (pullError) {
+        console.error('Failed to pull ChromaDB image:', pullError);
+        return false;
+      }
+    }
+
+    // Stop and remove existing container if it exists
+    try {
+      // These commands will throw an error if the container doesn't exist,
+      // which is fine, so we wrap them in a try-catch.
+      await execAsync('docker stop chromadb');
+      await execAsync('docker rm chromadb');
+      console.log('Stopped and removed existing ChromaDB container.');
+    } catch (error) {
+      // Ignore errors, container might not exist.
+    }
+
+    // Create and start a new container
+    await execAsync('docker run -d --name chromadb -p 8765:8000 chromadb/chroma');
+    console.log('New ChromaDB Docker container started successfully');
+    return true;
+
   } catch (error) {
     console.error('Failed to start ChromaDB Docker container:', error);
     return false;
   }
 }
-
 async function ensureHistoryDir() {
   const historyDir = path.join(process.cwd(), "conversation-history");
   try {
@@ -63,7 +89,6 @@ export async function mainInq(): Promise<void> {
       isChromaDBRunning = await checkChromaDocker();
     }
   }
-
   if (!isChromaDBRunning) {
     cfonts.say("Error", {
       font: "block",
@@ -77,10 +102,11 @@ export async function mainInq(): Promise<void> {
       gradient: false,
     });
     console.log(
-      "Unable to start ChromaDB Docker. Please make sure Docker is installed and running on port 8000."
+      "Unable to start ChromaDB Docker. Please make sure Docker is installed and running."
     );
     process.exit(1);
   }
+
 
   cfonts.say("RAGVAULT", {
     font: "block", // define the font face

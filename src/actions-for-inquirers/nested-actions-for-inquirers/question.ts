@@ -42,12 +42,16 @@ export const QuestionActions = async (
           }
 
           const collection = await getCollection(username + "-ragvault");
-          const chunks = await collection.query({
-            queryTexts: [conversationHistory.join("\n"), question],
-            nResults: 2,
-          });
+          const chunks: { documents: (string | null)[][] } =
+            await collection.query({
+              queryTexts: [conversationHistory.join("\n"), question],
+              nResults: 2,
+            });
 
-          const response = chunks.documents.join("\n");
+          const response = chunks.documents
+            .flat()
+            .filter((doc) => doc !== null)
+            .join("\n");
           console.log("\n" + response + "\n");
 
           conversationHistory.push({
