@@ -13,7 +13,7 @@ export async function promptCredentials(currentUser: string, users: UserStore) {
       choices: [
         "Set Collection Name*",
         "Add OPENAI-KEY(optional)",
-        "Add Notion Credentials(optional)",
+        // "Add Notion Credentials(optional)",
       ],
     },
   ]);
