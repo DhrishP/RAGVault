@@ -28,4 +28,4 @@ docker running command:
 
 `docker run -d --name chromadb -p 8765:8000 chromadb/chroma`
 
-**NOTE** : THE PORT SHOULD BE KEPT **_8000_**
+**NOTE** : THE PORT SHOULD BE KEPT **_8765_**
