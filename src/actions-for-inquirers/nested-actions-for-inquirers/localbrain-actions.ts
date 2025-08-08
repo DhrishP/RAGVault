@@ -3,8 +3,8 @@ import { Session, UserStore } from "../../types/index.js";
 import { getCollection } from "../../utils/chroma-client.js";
 import { nanoid } from "nanoid";
 import { createSpinner } from "nanospinner";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import pdf from "pdf-parse";
+import fs from "fs/promises";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
 import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
@@ -50,7 +50,7 @@ export const LocalBrainActions = async (
         {
           type: "file-tree-selection",
           name: "filePath",
-          message: "Please select a PDF or DOCX file:",
+          message: "Please select a PDF, TXT or MD file:",
         },
       ]);
 
@@ -60,16 +60,14 @@ export const LocalBrainActions = async (
       try {
         let extractedText = "";
         if (fileExtension === "pdf") {
-          const loader = new PDFLoader(trimmedFilePath);
-          const docs = await loader.load();
-          extractedText = docs.map((doc) => doc.pageContent).join("\n");
-        } else if (fileExtension === "docx") {
-          const loader = new DocxLoader(trimmedFilePath);
-          const docs = await loader.load();
-          extractedText = docs.map((doc) => doc.pageContent).join("\n");
+          const dataBuffer = await fs.readFile(trimmedFilePath);
+          const data = await pdf(dataBuffer);
+          extractedText = data.text;
+        } else if (fileExtension === "txt" || fileExtension === "md") {
+          extractedText = await fs.readFile(trimmedFilePath, "utf-8");
         } else {
           console.log(
-            "Unsupported file type. Please provide a .pdf or .docx file."
+            "Unsupported file type. Please provide a .pdf, .txt or .md file."
           );
           return;
         }
