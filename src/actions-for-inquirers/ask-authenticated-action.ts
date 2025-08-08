@@ -10,11 +10,17 @@ import { LocalBrainCommands } from "../inquirer-commands/nested-commands/localbr
 import { Session, UserStore } from "../types/index.js";
 import { QuestionActions } from "./nested-actions-for-inquirers/question.js";
 import { AskAQuestionCommands } from "../inquirer-commands/nested-commands/question.js";
-import { readConversationFile } from "../helpers/history.js";
 import {
   getConversationHistory,
+  readConversationFile,
 } from "../helpers/history.js";
+import { getCollection } from "../utils/chroma-client.js";
 import inquirer from "inquirer";
+import fs from "fs/promises";
+import { createSpinner } from "nanospinner";
+import { HistoryFile } from "../types/index.js";
+import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
+import path from "path";
 
 export async function handleAuthenticatedAction(
   action: string,
@@ -63,7 +69,7 @@ export async function handleAuthenticatedAction(
             type: "list",
             name: "selectedFile",
             message: "Select a conversation to view:",
-            choices: histories.map((history) => ({
+            choices: histories.map((history: HistoryFile) => ({
               name: `[${history.timestamp}] ${history.firstQuestion.substring(
                 0,
                 60
@@ -103,6 +109,111 @@ export async function handleAuthenticatedAction(
     case "Settings":
       const settingsAction = await SettingsCommands();
       await SettingsActions(settingsAction, session, currentUserName, users);
+      break;
+    case "Export Data":
+      inquirer.registerPrompt("file-tree-selection", inquirerFileTreeSelection);
+      const { exportFile } = await inquirer.prompt<{ exportFile: string }>([
+        {
+          type: "file-tree-selection",
+          name: "exportFile",
+          message: "Please select where to save the export file:",
+        },
+      ]);
+      let finalExportPath = exportFile;
+      try {
+        const stat = await fs.stat(exportFile);
+        if (stat.isDirectory()) {
+          const { filename } = await inquirer.prompt<{ filename: string }>([
+            {
+              type: "input",
+              name: "filename",
+              message:
+                "You've selected a directory. Please provide a name for the export file:",
+              default: "ragvault-export.json",
+            },
+          ]);
+          finalExportPath = path.join(exportFile, filename);
+        }
+      } catch (error: any) {
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
+      }
+      const exportSpinner = createSpinner("Exporting data...").start();
+      try {
+        const collection = await getCollection(currentUserName + "-ragvault");
+        const data = await collection.get();
+        await fs.writeFile(finalExportPath, JSON.stringify(data, null, 2));
+        exportSpinner.success({
+          text: `Data exported successfully to ${finalExportPath}`,
+        });
+      } catch (error) {
+        exportSpinner.error({ text: `Error exporting data: ${error}` });
+      }
+      const newExportAction = await promptAuthenticatedUser(currentUserName);
+      await handleAuthenticatedAction(
+        newExportAction,
+        currentUserName,
+        session,
+        users
+      );
+      break;
+    case "Import Data":
+      inquirer.registerPrompt("file-tree-selection", inquirerFileTreeSelection);
+      const { importFile } = await inquirer.prompt<{ importFile: string }>([
+        {
+          type: "file-tree-selection",
+          name: "importFile",
+          message: "Please select the file to import:",
+        },
+      ]);
+      try {
+        const stat = await fs.stat(importFile);
+        if (stat.isDirectory()) {
+          console.log(
+            chalk.red("\nError: You selected a directory. Please select a file to import.")
+          );
+          const newAction = await promptAuthenticatedUser(currentUserName);
+          await handleAuthenticatedAction(
+            newAction,
+            currentUserName,
+            session,
+            users
+          );
+          return;
+        }
+      } catch (error: any) {
+        if (error.code === "ENOENT") {
+          console.log(chalk.red(`\nError: The file "${importFile}" does not exist.`));
+        } else {
+          console.error(`\nError checking file: ${error.message}`);
+        }
+        const newAction = await promptAuthenticatedUser(currentUserName);
+        await handleAuthenticatedAction(
+          newAction,
+          currentUserName,
+          session,
+          users
+        );
+        return;
+      }
+      const importSpinner = createSpinner("Importing data...").start();
+      try {
+        const collection = await getCollection(currentUserName + "-ragvault");
+        const data = await fs.readFile(importFile, "utf8");
+        const parsedData = JSON.parse(data);
+        await collection.add(parsedData);
+        importSpinner.success({ text: "Data imported successfully" });
+      } catch (error) {
+        importSpinner.error({ text: `Error importing data: ${error}` });
+      }
+      const newImportAction = await promptAuthenticatedUser(currentUserName);
+      await handleAuthenticatedAction(
+        newImportAction,
+        currentUserName,
+        session,
+        users
+      );
       break;
     case "Head Out👋":
       const headOutAction = await HeadOutCommands();

@@ -15,6 +15,8 @@ export async function promptAuthenticatedUser(currentUser: string) {
         "Clear CLI🧹",
         "History🔍",
         "Settings",
+        "Export Data",
+        "Import Data",
         "Head Out👋",
       ],
     },
