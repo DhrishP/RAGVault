@@ -53,10 +53,11 @@ async function startChromaDocker() {
     }
 
     // Create and start a new container
-    await execAsync('docker run -d --name chromadb -p 8765:8000 chromadb/chroma');
-    console.log('New ChromaDB Docker container started successfully');
+    await execAsync(
+      "docker run -d --name chromadb -p 8765:8000 -v ragvault-data:/chroma/chroma chromadb/chroma"
+    );
+    console.log("New ChromaDB Docker container started successfully");
     return true;
-
   } catch (error) {
     console.error('Failed to start ChromaDB Docker container:', error);
     return false;

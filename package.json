@@ -1,6 +1,6 @@
 {
   "name": "ragvault",
-  "version": "4.7.3",
+  "version": "4.8.1",
   "main": "./dist/index.js",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
   ],
   "author": "DhrishP",
   "license": "MIT",
-  "description": "Just a test command for now",
+  "description": "Securely manage and query your private data using a local vector database. Your private RAG.",
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.8",
     "@chroma-core/openai": "^0.1.7",
