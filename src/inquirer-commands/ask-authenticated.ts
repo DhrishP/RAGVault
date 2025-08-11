@@ -19,6 +19,7 @@ export async function promptAuthenticatedUser(currentUser: string) {
         "Import Data",
         "Head Out👋",
       ],
+      loop: false,
     },
   ]);
   return action;
