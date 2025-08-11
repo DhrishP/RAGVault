@@ -4,7 +4,8 @@ import { getCollection } from "../utils/chroma-client.js";
 export const answerQuestionOpenAI = async (
   apiKey: string,
   username: string,
-  query: string
+  query: string,
+  conversationHistory: { question: string; response: string }[]
 ) => {
   const collection = await getCollection(username + "-ragvault");
   const chunks = await collection.query({
@@ -12,11 +13,19 @@ export const answerQuestionOpenAI = async (
     nResults: 2,
   });
 
+  const historyMessages = conversationHistory.flatMap((h) => [
+    { role: "user", content: h.question },
+    { role: "assistant", content: h.response },
+  ]);
+
   const messages = [
     {
       role: "assistant",
-      content: `You are a helpful assistant that can answer questions about the provided chunks. ${JSON.stringify(chunks)}`,
+      content: `You are a helpful assistant that can answer questions about the provided chunks. ${JSON.stringify(
+        chunks
+      )}`,
     },
+    ...historyMessages,
     { role: "user", content: query },
   ];
 

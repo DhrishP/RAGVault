@@ -4,13 +4,19 @@ import { getCollection } from "../utils/chroma-client.js";
 export const answerQuestionClaude = async (
   apiKey: string,
   username: string,
-  query: string
+  query: string,
+  conversationHistory: { question: string; response: string }[]
 ) => {
   const collection = await getCollection(username + "-ragvault");
   const chunks = await collection.query({
     queryTexts: [query],
     nResults: 2,
   });
+
+  const historyMessages = conversationHistory.flatMap((h) => [
+    { role: "user", content: h.question },
+    { role: "assistant", content: h.response },
+  ]);
 
   // Prepare the prompt using the retrieved chunks
   const prompt = `You are a helpful assistant that can answer questions about the provided chunks as context. ${chunks.documents[0]
@@ -19,9 +25,10 @@ export const answerQuestionClaude = async (
 
   // Prepare the request body for Anthropic Claude API
   const body = {
-    model: "claude-opus-4-1-20250805",
+    model: "claude-3-opus-20240229",
     max_tokens: 1024,
     messages: [
+      ...historyMessages,
       {
         role: "user",
         content: prompt,

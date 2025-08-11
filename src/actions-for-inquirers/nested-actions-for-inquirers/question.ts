@@ -41,9 +41,12 @@ export const QuestionActions = async (
           }
 
           const collection = await getCollection(username + "-ragvault");
+          const historyString = conversationHistory
+            .map((h) => `Question: ${h.question}\nAnswer: ${h.response}`)
+            .join("\n\n");
           const chunks: { documents: (string | null)[][] } =
             await collection.query({
-              queryTexts: [conversationHistory.join("\n"), question],
+              queryTexts: [historyString, question],
               nResults: 2,
             });
 
@@ -137,7 +140,8 @@ export const QuestionActions = async (
               response = await answerQuestionOpenAI(
                 users[username].openAIKey!,
                 username,
-                question
+                question,
+                conversationHistory
               );
               break;
             case LLM.CLAUDE:
@@ -158,7 +162,8 @@ export const QuestionActions = async (
               response = await answerQuestionClaude(
                 users[username].claudeKey!,
                 username,
-                question
+                question,
+                conversationHistory
               );
               break;
             case LLM.GEMINI:
@@ -179,7 +184,8 @@ export const QuestionActions = async (
               response = await answerQuestionGemini(
                 users[username].geminiKey!,
                 username,
-                question
+                question,
+                conversationHistory
               );
               break;
             default:
