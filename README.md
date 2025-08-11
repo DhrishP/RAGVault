@@ -1,29 +1,41 @@
-Well , want to keep your passwords , data privately in your local vector DB and query it by just opening as simple as a `npx` command. Well RAGVault does it for you
+# RAGVault
 
-Steps to use it:
+Want to keep your passwords and private data secure in a local vector database, and query it all with a simple command? RAGVault is the tool for you.
 
-```node
-npm i -g ragvault
-``` 
-after its installed then just 
+## How to Use
 
+1.  **Install RAGVault globally:**
+    ```bash
+    npm i -g ragvault
+    ```
 
-What it does:
+2.  **Start the ChromaDB Docker container:**
+    RAGVault requires a running instance of ChromaDB.
+    ```bash
+    docker run -d --name chromadb -p 8765:8000 chromadb/chroma
+    ```
+    **NOTE**: The port must be kept as `8765`.
 
-1. Saves your data in your chromaDB vector DB
-2. Saves your session in session.json file
-3. Saves your history
-4. Can ask question using LocalLLM (for low-end pc) or for more better asnwer you can go for remote-LLM using their API keys
+3.  **Run the application:**
+    Once installed, you can run it from anywhere in your terminal.
+    ```bash
+    ragvault
+    ```
 
-Currently Building🔨:
+## Features
 
-1. Supports for different embedding models from different AI providers
-2. History for remote LLM (followup history)
-3. Removing sdk's of AI providers from codebase and using their urls instead
-4. EXPORT data functionality
+*   **Secure Local Storage:** Saves your data in a local ChromaDB vector database.
+*   **Persistent Sessions:** Keeps your user session stored in a local `session.json` file.
+*   **Conversation History:** Remembers your past conversations for context.
+*   **Flexible LLM Options:**
+    *   **Local LLM:** A lightweight option that runs directly on your machine, perfect for lower-end PCs.
+    *   **Remote LLMs:** Integrate with powerful models from OpenAI, Anthropic (Claude), and Google (Gemini) using your own API keys for more advanced answers.
+*   **File Ingestion:** Add data to your local brain directly from `.pdf`, `.txt`, and `.md` files.
 
-docker running command:
+## What's Next?
 
-`docker run -d --name chromadb -p 8765:8000 chromadb/chroma`
+Here are some features currently under development:
 
-**NOTE** : THE PORT SHOULD BE KEPT **_8765_**
+*   Support for more embedding models from various AI providers.
+*   Follow-up conversation history for Remote LLMs.
+*   Data import and export functionality.
