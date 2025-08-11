@@ -1,15 +1,12 @@
 import inquirer from "inquirer";
 import { getCollection } from "../utils/chroma-client.js";
 
-export const answerQuestionGemini = async (key: string, username: string) => {
+export const answerQuestionGemini = async (
+  key: string,
+  username: string,
+  query: string
+) => {
   const collection = await getCollection(username + "-ragvault");
-  const { query } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "query",
-      message: "Enter your query here",
-    },
-  ]);
 
   const chunks = await collection.query({
     queryTexts: [query],

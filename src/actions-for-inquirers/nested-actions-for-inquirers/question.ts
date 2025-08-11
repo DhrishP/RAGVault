@@ -87,79 +87,148 @@ export const QuestionActions = async (
       }
       break;
     case "Using Remote LLM":
-      const sessionLLM = session.answerLLM;
-      let response;
-      let conversationHistory = [];
+      try {
+        const sessionLLM = session.answerLLM;
+        if (!sessionLLM) {
+          console.log("No remote LLM selected. Please select one in the settings.");
+          const action = await SettingsCommands();
+          await SettingsActions(action, session, username, users);
+          return;
+        }
 
-      const switchPass =
-        sessionLLM === LLM.OPENAI
-          ? "openai"
-          : sessionLLM === LLM.CLAUDE
-          ? "claude"
-          : sessionLLM === LLM.GEMINI
-          ? "gemini"
-          : null;
+        let conversationHistory: { question: string; response: string }[] = [];
+        let continueAsking = true;
 
-      switch (switchPass) {
-        case "openai":
-          if (!users[username].openAIKey) {
-            console.log("OpenAI key not found");
-            const { openAIKey } = await inquirer.prompt<{ openAIKey: string }>([
-              {
-                type: "input",
-                name: "openAIKey",
-                message: "Enter your OpenAI API key",
-              },
-            ]);
-            users[username].openAIKey = openAIKey;
-            await saveUsers(users);
-          }
-          const { question } = await inquirer.prompt([
+        while (continueAsking) {
+          const { question }: { question: string } = await inquirer.prompt([
             {
               type: "input",
               name: "question",
-              message: "What would you like to ask?",
+              message:
+                conversationHistory.length === 0
+                  ? "What question would you like to ask?"
+                  : "Ask a follow-up/similar question (or type 'exit' to end):",
             },
           ]);
-          response = await answerQuestionOpenAI(
-            users[username].openAIKey,
-            username
-          );
+
+          if (question.toLowerCase() === "exit") {
+            continueAsking = false;
+            break;
+          }
+
+          let response: string | undefined;
+
+          switch (sessionLLM) {
+            case LLM.OPENAI:
+              if (!users[username].openAIKey) {
+                console.log("OpenAI key not found");
+                const { openAIKey } = await inquirer.prompt<{
+                  openAIKey: string;
+                }>([
+                  {
+                    type: "input",
+                    name: "openAIKey",
+                    message: "Enter your OpenAI API key",
+                  },
+                ]);
+                users[username].openAIKey = openAIKey;
+                await saveUsers(users);
+              }
+              response = await answerQuestionOpenAI(
+                users[username].openAIKey!,
+                username,
+                question
+              );
+              break;
+            case LLM.CLAUDE:
+              if (!users[username].claudeKey) {
+                console.log("Claude key not found");
+                const { claudeKey } = await inquirer.prompt<{
+                  claudeKey: string;
+                }>([
+                  {
+                    type: "input",
+                    name: "claudeKey",
+                    message: "Enter your Claude API key",
+                  },
+                ]);
+                users[username].claudeKey = claudeKey;
+                await saveUsers(users);
+              }
+              response = await answerQuestionClaude(
+                users[username].claudeKey!,
+                username,
+                question
+              );
+              break;
+            case LLM.GEMINI:
+              if (!users[username].geminiKey) {
+                console.log("Gemini key not found");
+                const { geminiKey } = await inquirer.prompt<{
+                  geminiKey: string;
+                }>([
+                  {
+                    type: "input",
+                    name: "geminiKey",
+                    message: "Enter your Gemini API key",
+                  },
+                ]);
+                users[username].geminiKey = geminiKey;
+                await saveUsers(users);
+              }
+              response = await answerQuestionGemini(
+                users[username].geminiKey!,
+                username,
+                question
+              );
+              break;
+            default:
+              console.log("Invalid LLM selected.");
+              continue;
+          }
+
           if (response) {
             conversationHistory.push({
               question: question,
               response: response,
             });
-            await saveConversationHistory(conversationHistory, username);
+
+            const { nextAction } = await inquirer.prompt([
+              {
+                type: "list",
+                name: "nextAction",
+                message: "What would you like to do next?",
+                choices: [
+                  "Ask a follow-up question",
+                  "Ask a similar question",
+                  "Finish conversation and checkout",
+                ],
+              },
+            ]);
+
+            if (nextAction === "Finish conversation and checkout") {
+              continueAsking = false;
+            }
+          } else {
+            console.log("Did not get a response from the LLM.");
           }
-          break;
-        case "claude":
-          if (!users[username].claudeKey) {
-            console.log("Claude key not found");
-            break;
-          }
-          answerQuestionClaude(users[username].claudeKey, username);
-          break;
-        case "gemini":
-          if (!users[username].geminiKey) {
-            console.log("Gemini key not found");
-            break;
-          }
-          const responsegemini = await answerQuestionGemini(
-            users[username].geminiKey,
-            username
-          );
-          if (responsegemini) {
-            conversationHistory.push({
-              question: question,
-              response: responsegemini,
-            });
-          }
+        }
+
+        if (conversationHistory.length > 0) {
           await saveConversationHistory(conversationHistory, username);
-          break;
-        default:
-          const action = await SettingsCommands();
-          SettingsActions(action, session, username, users);
+
+          console.log("\nConversation History:");
+          conversationHistory.forEach((entry, index) => {
+            console.log(`\n--- Question ${index + 1} ---`);
+            console.log(`Q: ${entry.question}`);
+            console.log(`A: ${entry.response}`);
+          });
+        }
+      } catch (error) {
+        console.error(
+          "\nSomething went wrong with remote LLM questioning.\n",
+          error
+        );
       }
       break;
     case "Back":

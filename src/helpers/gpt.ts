@@ -3,16 +3,10 @@ import { getCollection } from "../utils/chroma-client.js";
 
 export const answerQuestionOpenAI = async (
   apiKey: string,
-  username: string
+  username: string,
+  query: string
 ) => {
   const collection = await getCollection(username + "-ragvault");
-  const { query } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "query",
-      message: "Enter your query here",
-    },
-  ]);
   const chunks = await collection.query({
     queryTexts: [query],
     nResults: 2,
