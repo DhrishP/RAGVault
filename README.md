@@ -8,6 +8,7 @@ Want to keep your passwords and private data secure in a local vector database, 
     ```bash
     npm i -g ragvault
     ```
+    **NOTE:** Please use `npm` for installation. While other package managers like `pnpm` or `bun` might work, `ragvault` is only tested and verified with `npm`.
 
 2.  **Ensure Docker is running:**
     RAGVault automatically starts the required ChromaDB database in the background, but you need to have Docker running on your system.
