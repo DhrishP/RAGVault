@@ -14,14 +14,20 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import { isWindows, joinPaths } from './utils/platform.js';
 
 const execAsync = promisify(exec);
+
+function getDockerCommand(command: string): string {
+  // Docker commands are consistent across platforms
+  return command;
+}
 
 async function startChromaDocker() {
   try {
     // Check if Docker is available
     try {
-      await execAsync('docker --version');
+      await execAsync(getDockerCommand('docker --version'));
     } catch (error) {
       console.error('Docker is not installed or not available in PATH.');
       return false;
@@ -29,11 +35,11 @@ async function startChromaDocker() {
 
     // Check if chromadb/chroma image is available
     try {
-      await execAsync('docker image inspect chromadb/chroma:latest >/dev/null 2>&1');
+      await execAsync(getDockerCommand('docker image inspect chromadb/chroma:latest'));
     } catch (error) {
       console.log('ChromaDB image not found locally. Pulling from Docker Hub...');
       try {
-        await execAsync('docker pull chromadb/chroma:latest');
+        await execAsync(getDockerCommand('docker pull chromadb/chroma:latest'));
         console.log('ChromaDB image pulled successfully.');
       } catch (pullError) {
         console.error('Failed to pull ChromaDB image:', pullError);
@@ -45,8 +51,8 @@ async function startChromaDocker() {
     try {
       // These commands will throw an error if the container doesn't exist,
       // which is fine, so we wrap them in a try-catch.
-      await execAsync('docker stop chromadb');
-      await execAsync('docker rm chromadb');
+      await execAsync(getDockerCommand('docker stop chromadb'));
+      await execAsync(getDockerCommand('docker rm chromadb'));
       console.log('Stopped and removed existing ChromaDB container.');
     } catch (error) {
       // Ignore errors, container might not exist.
@@ -54,7 +60,7 @@ async function startChromaDocker() {
 
     // Create and start a new container
     await execAsync(
-      "docker run -d --name chromadb -p 8765:8000 -v ragvault-data:/chroma/chroma chromadb/chroma"
+      getDockerCommand("docker run -d --name chromadb -p 8765:8000 -v ragvault-data:/chroma/chroma chromadb/chroma")
     );
     console.log("New ChromaDB Docker container started successfully");
     return true;
@@ -64,7 +70,7 @@ async function startChromaDocker() {
   }
 }
 async function ensureHistoryDir() {
-  const historyDir = path.join(process.cwd(), "conversation-history");
+  const historyDir = joinPaths(process.cwd(), "conversation-history");
   try {
     await fs.mkdir(historyDir, { recursive: true });
   } catch (error) {

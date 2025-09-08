@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { ConversationEntry, HistoryFile } from "../types/index.js";
 import { HISTORY_DIR } from "../constant/index.js";
+import { joinPaths } from "../utils/platform.js";
 
 export async function getConversationHistory(
   username: string
@@ -19,7 +20,7 @@ export async function getConversationHistory(
     const historyFiles: HistoryFile[] = await Promise.all(
       userFiles.map(async (filename) => {
         const content = await fs.readFile(
-          path.join(HISTORY_DIR, filename),
+          joinPaths(HISTORY_DIR, filename),
           "utf-8"
         );
         try {
@@ -57,7 +58,7 @@ export async function readConversationFile(
   filename: string
 ): Promise<ConversationEntry[]> {
   try {
-    const filePath = path.join(HISTORY_DIR, filename);
+    const filePath = joinPaths(HISTORY_DIR, filename);
     const content = await fs.readFile(filePath, "utf-8");
     return JSON.parse(content);
   } catch (error) {
@@ -73,7 +74,7 @@ export const saveConversationHistory = async (
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     await fs.mkdir(HISTORY_DIR, { recursive: true });
-    const filename = path.join(
+    const filename = joinPaths(
       HISTORY_DIR,
       `chat-${username}-${timestamp}.txt`
     );

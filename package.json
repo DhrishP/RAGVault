@@ -5,7 +5,16 @@
   "type": "module",
   "scripts": {
     "main": "tsc && node ./dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "build:win": "tsc",
+    "build:linux": "tsc",
+    "build:mac": "tsc",
+    "start": "node ./dist/index.js",
+    "dev": "tsc && npm run start",
+    "clean": "rimraf dist",
+    "postinstall": "npm run build",
+    "setup": "node scripts/dev-setup.js",
+    "test:platform": "node -e \"console.log('Platform:', process.platform, 'Arch:', process.arch);\""
   },
   "bin": {
     "ragvault": "./dist/index.js"
@@ -36,6 +45,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/chalk-animation": "^1.6.3",
+    "rimraf": "^5.0.5",
     "typescript": "^5.5.4"
   },
   "repository": {
@@ -47,5 +57,10 @@
     "Terminal",
     "Command Line Interface",
     "CLI"
-  ]
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "os": ["linux", "darwin", "win32"]
 }
