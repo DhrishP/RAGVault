@@ -21,6 +21,7 @@ import { createSpinner } from "nanospinner";
 import { HistoryFile } from "../types/index.js";
 import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
 import path from "path";
+import { joinPaths } from "../utils/platform.js";
 
 export async function handleAuthenticatedAction(
   action: string,
@@ -132,7 +133,7 @@ export async function handleAuthenticatedAction(
               default: "ragvault-export.json",
             },
           ]);
-          finalExportPath = path.join(exportFile, filename);
+          finalExportPath = joinPaths(exportFile, filename);
         }
       } catch (error: any) {
         if (error.code !== "ENOENT") {

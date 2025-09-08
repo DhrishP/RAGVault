@@ -1,0 +1,59 @@
+name: Docker Compatibility Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Test Docker availability (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        if command -v docker &> /dev/null; then
+          echo "Docker is available"
+          docker --version
+        else
+          echo "Docker is not available"
+        fi
+    
+    - name: Test Docker availability (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        try {
+          docker --version
+          Write-Host "Docker is available"
+        } catch {
+          Write-Host "Docker is not available"
+        }
+    
+    - name: Test ChromaDB image pull (Unix only)
+      if: runner.os == 'ubuntu-latest'
+      run: |
+        echo "Testing ChromaDB Docker image pull..."
+        docker pull chromadb/chroma:latest
+        echo "ChromaDB image pulled successfully"
