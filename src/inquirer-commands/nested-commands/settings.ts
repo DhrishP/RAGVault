@@ -9,6 +9,7 @@ export async function SettingsCommands() {
       choices: [
         "Add AI Providers Keys",
         "Choose Remote LLM",
+        "Choose Local LLM",
         "Choose Embedding Model",
         "Back",
       ],

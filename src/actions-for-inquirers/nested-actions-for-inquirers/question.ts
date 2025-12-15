@@ -9,8 +9,12 @@ import { answerQuestionOpenAI } from "../../helpers/gpt.js";
 import { answerQuestionClaude } from "../../helpers/claude.js";
 import { saveConversationHistory } from "../../helpers/history.js";
 import { answerQuestionGemini } from "../../helpers/gemini.js";
+import { answerQuestionOllama, getOllamaModels, isOllamaRunning } from "../../helpers/ollama.js";
 import { promptAuthenticatedUser } from "../../inquirer-commands/ask-authenticated.js";
 import { handleAuthenticatedAction } from "../ask-authenticated-action.js";
+import chalk from "chalk";
+
+
 export const QuestionActions = async (
   action: string,
   username: string,
@@ -20,8 +24,36 @@ export const QuestionActions = async (
   switch (action) {
     case "Using Local LLM":
       try {
-        let conversationHistory = [];
+        let conversationHistory: { question: string; response: string }[] = [];
         let continueAsking = true;
+        
+        // Ensure Ollama is running
+        if (!(await isOllamaRunning())) {
+           console.log(chalk.red("Ollama is not running. Please start Ollama first."));
+           break;
+        }
+
+        let selectedModel = users[username].ollamaModel;
+
+        if (!selectedModel) {
+            console.log("No Local LLM model selected. Checking available models...");
+            const models = await getOllamaModels();
+            if (models.length === 0) {
+                 console.log(chalk.red("No Ollama models found. Please make sure Ollama is running and you have pulled at least one model (e.g., 'ollama pull llama3')."));
+                 break;
+            }
+            const { model } = await inquirer.prompt([
+                {
+                    type: "list",
+                    name: "model",
+                    message: "Select a Local LLM model:",
+                    choices: models
+                }
+            ]);
+            selectedModel = model;
+            users[username].ollamaModel = selectedModel;
+            await saveUsers(users);
+        }
 
         while (continueAsking) {
           const { question }: { question: string } = await inquirer.prompt([
@@ -50,29 +82,55 @@ export const QuestionActions = async (
               nResults: 2,
             });
 
-          const response = chunks.documents
+          const context = chunks.documents
             .flat()
             .filter((doc) => doc !== null)
             .join("\n");
-          console.log("\n" + response + "\n");
+          
+          console.log(chalk.cyan("\nThinking...\n"));
+          if (!selectedModel) {
+             // This fallback should rarely be hit if the logic above works, 
+             // but handle it just in case the file was edited or state is weird.
+             const models = await getOllamaModels();
+             if (models.length > 0) {
+                const { model } = await inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "model",
+                        message: "Select a Local LLM model:",
+                        choices: models
+                    }
+                ]);
+                selectedModel = model;
+                users[username].ollamaModel = selectedModel;
+                await saveUsers(users);
+             } else {
+                console.error("No model selected and no models available.");
+                break;
+             }
+          }
+          
+          if (selectedModel) {
+              const response = await answerQuestionOllama(selectedModel, question, context, conversationHistory);
+              console.log("\n" + response + "\n");
 
-          conversationHistory.push({
-            question,
-            response,
-          });
+              conversationHistory.push({
+                question,
+                response,
+              });
 
-          const { continue: shouldContinue } = await inquirer.prompt<{
-            continue: boolean;
-          }>([
-            {
-              type: "confirm",
-              name: "continue",
-              message: "Would you like to ask a follow-up question?",
-              default: true,
-            },
-          ]);
-
-          continueAsking = shouldContinue;
+              const { continue: shouldContinue } = await inquirer.prompt<{
+                continue: boolean;
+              }>([
+                {
+                  type: "confirm",
+                  name: "continue",
+                  message: "Would you like to ask a follow-up question?",
+                  default: true,
+                },
+              ]);
+              continueAsking = shouldContinue;
+          }
         }
 
         if (conversationHistory.length > 0) {
@@ -86,7 +144,7 @@ export const QuestionActions = async (
           });
         }
       } catch (error) {
-        console.error("\nSomething went wrong\n");
+        console.error("\nSomething went wrong\n", error);
       }
       break;
     case "Using Remote LLM":

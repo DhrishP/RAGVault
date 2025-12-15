@@ -18,9 +18,22 @@ import path from 'path';
 const execAsync = promisify(exec);
 
 import { startDockerDaemon, isDockerRunning } from "./utils/docker-helpers.js";
+import { isOllamaRunning } from "./helpers/ollama.js";
 
 async function startChromaDocker() {
   try {
+    // Check if Ollama is running
+    const ollamaRunning = await isOllamaRunning();
+    if (!ollamaRunning) {
+        console.log(
+            "\n" + 
+            "--------------------------------------------------------------------------------\n" +
+            "WARNING: Ollama is not running. Please install and start Ollama to use Local LLM features.\n" +
+            "Download at: https://ollama.com\n" +
+            "--------------------------------------------------------------------------------\n"
+        );
+    }
+
     // Check if Docker is available/running
     const dockerRunning = await isDockerRunning();
     if (!dockerRunning) {

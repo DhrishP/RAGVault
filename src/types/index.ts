@@ -10,6 +10,7 @@ export interface User {
   claudeKey?: string;
   geminiKey?: string;
   embeddingModelName?: string;
+  ollamaModel?: string;
 }
 
 export interface UserStore {

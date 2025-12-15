@@ -16,6 +16,7 @@ import { saveUsers } from "../../utils/user-transactions.js";
 import { ChooseLLMCommands } from "../../inquirer-commands/nested-commands/nested-nested-commands/chooseLLM.js";
 import { saveSession } from "../../utils/session.js";
 import { ChooseEmbeddingModel } from "../../inquirer-commands/nested-commands/nested-nested-commands/choose-embedding-model.js";
+import { getOllamaModels } from "../../helpers/ollama.js";
 
 export async function SettingsActions(
   action: string,
@@ -173,6 +174,34 @@ export async function SettingsActions(
 
       const newAction = await SettingsCommands();
       await SettingsActions(newAction, session, currentUser, users);
+      break;
+
+    case "Choose Local LLM":
+      const spinnerModels = createSpinner("Fetching Ollama models...").start();
+      const models = await getOllamaModels();
+      spinnerModels.stop();
+
+      if (models.length === 0) {
+        console.log(chalk.red("No Ollama models found. Please make sure Ollama is running and you have pulled at least one model."));
+      } else {
+        const { model } = await inquirer.prompt([
+            {
+                type: "list",
+                name: "model",
+                message: "Select a Local LLM model:",
+                choices: [...models, "Back"]
+            }
+        ]);
+
+        if (model !== "Back") {
+            users[currentUser].ollamaModel = model;
+            await saveUsers(users);
+            console.log(chalk.green(`Local LLM model set to ${model}`));
+        }
+      }
+
+      const newActionLocal = await SettingsCommands();
+      await SettingsActions(newActionLocal, session, currentUser, users);
       break;
 
     case "Choose Embedding Model":
