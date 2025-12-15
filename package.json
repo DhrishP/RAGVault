@@ -4,8 +4,11 @@
   "main": "./dist/index.js",
   "type": "module",
   "scripts": {
-    "main": "tsc && node ./dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prestart": "npm run build"
   },
   "bin": {
     "ragvault": "./dist/index.js"

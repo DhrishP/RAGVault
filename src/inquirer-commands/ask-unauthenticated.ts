@@ -6,7 +6,7 @@ export async function promptUnauthenticatedUser() {
       type: "list",
       name: "action",
       message: "What would you like to do?",
-      choices: ["Login", "Register", "Reset Password", "Exit"],
+      choices: ["Login", "Register", "Reset Password", "Forgot Username", "Exit"],
     },
   ]);
   return action;
