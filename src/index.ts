@@ -17,16 +17,24 @@ import path from 'path';
 
 const execAsync = promisify(exec);
 
+import { startDockerDaemon, isDockerRunning } from "./utils/docker-helpers.js";
+
 async function startChromaDocker() {
   try {
-    // Check if Docker is available
-    try {
-      await execAsync('docker --version');
-    } catch (error) {
-      console.error('Docker is not installed or not available in PATH.');
-      return false;
+    // Check if Docker is available/running
+    const dockerRunning = await isDockerRunning();
+    if (!dockerRunning) {
+        console.log("Docker is not running. Attempting to start Docker...");
+        const started = await startDockerDaemon();
+        if (started) {
+            console.log("Docker started successfully. Waiting for daemon to initialize...");
+            await new Promise(resolve => setTimeout(resolve, 15000)); // Give Docker time to fully start
+        } else {
+            console.error('Failed to start Docker automatically. Please start Docker manually.');
+            return false;
+        }
     }
-
+    
     // Check if chromadb/chroma image is available
     try {
       await execAsync('docker image inspect chromadb/chroma:latest >/dev/null 2>&1');
